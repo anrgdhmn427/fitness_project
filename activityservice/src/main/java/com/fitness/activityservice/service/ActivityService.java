@@ -53,7 +53,7 @@ public class ActivityService {
         try{
             rabbitTemplate.convertAndSend(exchange,routingKey,saveActivity);
         } catch (Exception e) {
-            log.error("Failed to publish  to RabbitMQ ", e);
+            log.error("Failed to publish  to RabbitMQ:  ", e);
             throw new RuntimeException(e);
         }
 

@@ -1,4 +1,4 @@
-package com.fitness.activityservice.config;
+package com.fitness.aiservice.config;
 
 
 import org.springframework.amqp.core.Binding;
@@ -23,28 +23,29 @@ public class RabbitMqConfig {
     private String routingKey;
 
     @Bean
- public Queue activityQueue(){
-     return new Queue(queue, true);
- }
+    public Queue activityQueue() {
+        return new Queue(queue, true);
+    }
 
 
-//to convert the object in json..else..java will send ray bytes and we have to seriliaze and deserilse the object
- @Bean
-    public MessageConverter jsonMessageConverter(){
+    //to convert the object in json..else..java will send ray bytes and we have to seriliaze and deserilse the object
+    @Bean
+    public MessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
- }
+    }
 
 
- @Bean
-    public DirectExchange activityExchange(){
+    @Bean
+    public DirectExchange activityExchange() {
         return new DirectExchange(exchange);
- }
+    }
 
- @Bean
-    public Binding activityBinding(Queue activityQueue,DirectExchange activityExchange){
+    @Bean
+    public Binding activityBinding(Queue activityQueue, DirectExchange activityExchange) {
 
         return BindingBuilder.bind(activityQueue).to(activityExchange).with(routingKey);
- }
+    }
 
 
 }
+
