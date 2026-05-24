@@ -5,7 +5,6 @@ import com.fitness.userservice.dto.UserResponse;
 import com.fitness.userservice.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +16,7 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/{userId}")
-    public ResponseEntity<UserResponse> getUserProfile(@PathVariable String userId){
+    public ResponseEntity<UserResponse> getUserProfile(@PathVariable String userId) {
 
 
         return ResponseEntity.ok(userService.getUserProfile(userId));
@@ -25,7 +24,7 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponse> register(@Valid  @RequestBody RegisterRequest request){
+    public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request) {
 
         return ResponseEntity.ok(userService.register(request));
 
@@ -33,10 +32,10 @@ public class UserController {
 
 
     @GetMapping("/{userId}/validate")
-    public ResponseEntity<Boolean> validateUSer(@PathVariable String userId){
+    public ResponseEntity<Boolean> validateUSer(@PathVariable String userId) {
 
 
-        return ResponseEntity.ok(userService.existByUserId(userId));
+        return ResponseEntity.ok(userService.existByKeyCloakId(userId));
 
     }
 }

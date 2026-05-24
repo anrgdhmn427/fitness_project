@@ -9,9 +9,13 @@ spring:
       ddl-auto: update
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
 
 server:
   port: 8081
+
 eureka:
   client:
     service-url:
@@ -19,10 +23,7 @@ eureka:
   instance:
     prefer-ip-address: true
 
-
 logging:
   level:
-    org:
-      springframework:
-        cloud:
-          loadbalancer: DEBUG
+    org.springframework.cloud.loadbalancer: DEBUG
+    org.hibernate.orm.jdbc.bind: trace

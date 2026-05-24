@@ -6,7 +6,6 @@ import com.fitness.userservice.model.User;
 import com.fitness.userservice.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,17 +16,27 @@ public class UserService {
     private UserRepository repository;
 
     public UserResponse register(@Valid RegisterRequest request) {
-        if(repository.existsByEmail(request.getEmail())){
+        if (repository.existsByEmail(request.getEmail())) {
 
-            throw new RuntimeException("Email Already Exists");
+            User existingUser = repository.findByEmail(request.getEmail());
+            UserResponse userResponse = new UserResponse();
+            userResponse.setId(existingUser.getId());
+            userResponse.setKeyCloakId(userResponse.getKeyCloakId());
+            userResponse.setLastName(existingUser.getLastName());
+            userResponse.setFirstName(existingUser.getFirstName());
+            userResponse.setPassword(existingUser.getPassword());
+            userResponse.setEmail(existingUser.getEmail());
+            userResponse.setCrtAt(existingUser.getCrtAt());
+            userResponse.setUpdtAt(existingUser.getUpdtAt());
         }
         User user = new User();
         user.setEmail(request.getEmail());
         user.setPassword(request.getPassword());
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
-        User savedUSer=repository.save(user);
+        User savedUSer = repository.save(user);
         UserResponse userResponse = new UserResponse();
+        userResponse.setKeyCloakId(savedUSer.getKeyCloakId());
         userResponse.setId(savedUSer.getId());
         userResponse.setLastName(savedUSer.getLastName());
         userResponse.setFirstName(savedUSer.getFirstName());
@@ -43,7 +52,7 @@ public class UserService {
 
     public UserResponse getUserProfile(String userId) {
 
-        User user = repository.findById(userId).orElseThrow(()-> new RuntimeException("User Not found"));
+        User user = repository.findById(userId).orElseThrow(() -> new RuntimeException("User Not found"));
         UserResponse userResponse = new UserResponse();
         userResponse.setId(user.getId());
         userResponse.setLastName(user.getLastName());
@@ -52,12 +61,17 @@ public class UserService {
         userResponse.setCrtAt(user.getCrtAt());
         userResponse.setUpdtAt(user.getUpdtAt());
 
-        return  userResponse;
+        return userResponse;
 
     }
 
     public Boolean existByUserId(String userId) {
-        log.info("Calling user Validation API for user iD {}",userId);
+        log.info("Calling user Validation API for user iD {}", userId);
         return repository.existsById(userId);
+    }
+
+    public Boolean existByKeyCloakId(String userId) {
+        return repository.existsByKeyCloakId(userId);
+
     }
 }
