@@ -24,6 +24,7 @@ spring:
             - Path=/api/recommendations/**
 
 
+
 server:
   port: 8080
 

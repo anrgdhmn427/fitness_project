@@ -24,7 +24,7 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<UserResponse> register(@RequestBody RegisterRequest request) {
 
         return ResponseEntity.ok(userService.register(request));
 
@@ -35,7 +35,7 @@ public class UserController {
     public ResponseEntity<Boolean> validateUSer(@PathVariable String userId) {
 
 
-        return ResponseEntity.ok(userService.existByKeyCloakId(userId));
+        return ResponseEntity.ok(userService.existByUserId(userId));
 
     }
 }

@@ -7,6 +7,7 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -24,22 +25,31 @@ public class KeyCloakUserSyncFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+
+
+        if (exchange.getRequest().getMethod() == HttpMethod.OPTIONS) {
+            return chain.filter(exchange);
+        }
         String userId = exchange.getRequest().getHeaders().getFirst("X-User-ID");
         String token = exchange.getRequest().getHeaders().getFirst("Authorization");
+        RegisterRequest registerRequest = getUserDetails(token);
+        if(userId==null){
+            userId=registerRequest.getKeyCloakId();
+        }
+
 
         if (userId != null && token != null) {
 
+            String finalUserId = userId;
             return userService.validateUser(userId)
                     .flatMap(exist -> {
                         if (!exist) {
-                            RegisterRequest registerRequest = getUserDetails(token);
 
                             if (registerRequest != null) {
                                 return userService.registerUser(registerRequest)
                                         .then(Mono.empty());
                             } else {
                                 return Mono.empty();
-
                             }
 
                         } else {
@@ -49,7 +59,7 @@ public class KeyCloakUserSyncFilter implements WebFilter {
                     })
                     .then(Mono.defer(() -> {
                         ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
-                                .header("X-User_ID", userId)
+                                .header("X-User-ID", finalUserId)
                                 .build();
                         return chain.filter(exchange.mutate().request(mutatedRequest).build());
                     }));
@@ -67,11 +77,10 @@ public class KeyCloakUserSyncFilter implements WebFilter {
             SignedJWT signedJWT = SignedJWT.parse(tokenWithoutBearer);
             JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
 
-            RegisterRequest registerRequest = new RegisterRequest();
             RegisterRequest register = new RegisterRequest();
             register.setEmail(claimsSet.getStringClaim("email"));
             register.setKeyCloakId(claimsSet.getStringClaim("sub"));
-            register.setPassword(claimsSet.getStringClaim("dummy@123"));
+            register.setPassword("dummy@123");
             register.setFirstName(claimsSet.getStringClaim("given_name"));
             register.setLastName(claimsSet.getStringClaim("family_name"));
             return register;

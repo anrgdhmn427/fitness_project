@@ -1,6 +1,9 @@
 1)Run Docket Desktop
 2)Run the RabbitMQ in the local Docker.and paste the command in the powershell/Cmd.
 
+
+
+
 docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
 
 RabbitMq Cred below
@@ -45,6 +48,13 @@ Go TO realm setting to see the endpoints --> Find "Endpoints"
 
 
 3) Add Gemini API credentials in environment variables
+
+
+
+
+
+
+
 
 
 

@@ -33,7 +33,7 @@ public class GeminiService {
         });
 
         String response = webClient.post()
-                .uri(geminiApiUrl + geminiApiKey)
+                .uri(geminiApiUrl +"?key="+ geminiApiKey)
                 .header("Content-Type", "application/json")
                 .bodyValue(requestBdy)
                 .retrieve()

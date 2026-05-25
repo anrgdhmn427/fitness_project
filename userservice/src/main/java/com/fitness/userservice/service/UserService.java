@@ -15,7 +15,7 @@ public class UserService {
     @Autowired
     private UserRepository repository;
 
-    public UserResponse register(@Valid RegisterRequest request) {
+    public UserResponse register(RegisterRequest request) {
         if (repository.existsByEmail(request.getEmail())) {
 
             User existingUser = repository.findByEmail(request.getEmail());
@@ -24,16 +24,25 @@ public class UserService {
             userResponse.setKeyCloakId(userResponse.getKeyCloakId());
             userResponse.setLastName(existingUser.getLastName());
             userResponse.setFirstName(existingUser.getFirstName());
-            userResponse.setPassword(existingUser.getPassword());
+            if (userResponse.getPassword() == null) {
+                userResponse.setPassword("KEYCLOAK_MANAGED");
+            }
+            else{
+            userResponse.setPassword(existingUser.getPassword());}
             userResponse.setEmail(existingUser.getEmail());
             userResponse.setCrtAt(existingUser.getCrtAt());
             userResponse.setUpdtAt(existingUser.getUpdtAt());
         }
         User user = new User();
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword());
+        if (user.getPassword() == null) {
+            user.setPassword("KEYCLOAK_MANAGED");
+        }
+        else{
+        user.setPassword(request.getPassword());}
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
+        user.setKeyCloakId(request.getKeyCloakId());
         User savedUSer = repository.save(user);
         UserResponse userResponse = new UserResponse();
         userResponse.setKeyCloakId(savedUSer.getKeyCloakId());
@@ -67,7 +76,7 @@ public class UserService {
 
     public Boolean existByUserId(String userId) {
         log.info("Calling user Validation API for user iD {}", userId);
-        return repository.existsById(userId);
+        return repository.existsByKeyCloakId(userId);
     }
 
     public Boolean existByKeyCloakId(String userId) {
