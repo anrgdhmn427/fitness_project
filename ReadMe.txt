@@ -1,53 +1,63 @@
-1)Run Docket Desktop
-2)Run the RabbitMQ in the local Docker.and paste the command in the powershell/Cmd.
+# Fitness Tracking 
+
+Microservices backend for tracking workouts and getting AI-powered fitness recommendations
+--> Services
+
+
+eureka ->8761 -->Service discovery
+configserver-> 8888 -> Centralized config
+gateway ->8080 -> API Gateway + Keycloak JWT validation
+userservice->8081->PostgreSQL->User registration & profile
+activityservice-> 8082 ->MongoDB->Workout logging, publishes to RabbitMQ
+aiservice-> 8083 ->MongoDB->Consumes from RabbitMQ, calls Gemini API 
 
 
 
+
+
+--> Working
+
+User logs in through Keycloak->gateway validates the JWT->if first time user, the gateway auto-registers them (wrote a custom `KeyCloakUserSyncFilter` for this so there's no separate signup step).
+
+When user logs a workout, it gets saved in MongoDB and an event goes to RabbitMQ. The AI service picks it up, sends it to Gemini with a structured prompt, parses the response into recommendations (analysis, improvements, next workout suggestions, safety tips) and saves to MongoDB.
+
+Activity logging and AI processing are completely async --user gets immediate response, recommendations generate in the background.
+
+-->Tech Stack
+
+
+
+-->HOW TO RUN
+
+
+
+--- STart RabbitMQ and Keyclock Locally on Docket desktop
+
+PowerShell
 
 docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
 
-RabbitMq Cred below
-login-- guest
-passsword -- guest
-
-3) run KeyCloak--
 docker run -p 127.0.0.1:8181:8080 -e KC_BOOTSTRAP_ADMIN_USERNAME=admin -e KC_BOOTSTRAP_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:26.6.2 start-dev
-create a new realm-- >fitness-oauth2
-add new client -- >
-    Client_ID:- oauth2-pkce-client
-
-    authentication flow: standard flow and   Direct flow
-    Require PKCE S256 ON
 
 
-how to use Postman for API if Unauthorized Issue,
+RabbitMQ UI: http://localhost:15672 (guest/guest)
 
-go to authorization section of postman...
- to Create the token
-token name: fitness-app-token
-grant type: Authorization code with pkce
-auth url: http://localhost:8181/realms/fitness-oauth2/protocol/openid-connect/auth  (taken from realm setting endpoints----> openID endpoint configuration -->authorization_endpoint)
-access token url: http://localhost:8181/realms/fitness-oauth2/protocol/openid-connect/token (taken from realm setting endpoints----> openID endpoint configuration -->token_endpoint)
-client ID:  oauth2-pkce-client (client name in the realm)
-
-then click -> Get new Access token
-
-Login using credentials..then use Token
-(you can create the credentials using keyCloak dashboard-->users-->add user)
+---> Configure Keycloak at http://localhost:8181:
 
 
 
-GOTO authorization Tab:
+--> Set Environment users
 
-authType--> OAuth 2
-Go TO realm setting to see the endpoints --> Find "Endpoints"
-                                then OpenID Endpoint Configuration
+Powershell
 
-
-
+export GEMINI_API_URL=https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent
+export GEMINI_API_KEY=your_key
 
 
-3) Add Gemini API credentials in environment variables
+->Start services
+
+
+eureka->configserver->userservice->activityservice->aiservice->gateway
 
 
 
@@ -58,3 +68,29 @@ Go TO realm setting to see the endpoints --> Find "Endpoints"
 
 
 
+
+--->Endpoints
+
+
+Users
+POST /api/users/register
+GET /api/users/{userId}
+GET /api/users/{userId}/validate
+
+
+POST /api/activities
+GET /api/activities
+GET /api/activities/{activityId}
+
+
+GET /api/recommendations/user/{userId}
+GET /api/recommendations/activity/{activityId}
+
+-->Postman Testing
+
+Auth tab->OAuth 2.0->Authorization Code with PKCE
+Auth URL: http://localhost:8181/realms/fitness-oauth2/protocol/openid-connect/auth
+Token URL: http://localhost:8181/realms/fitness-oauth2/protocol/openid-connect/token
+Client ID: oauth2-pkce-client
+
+click Get New Access Token
