@@ -69,6 +69,17 @@ eureka->configserver->userservice->activityservice->aiservice->gateway
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 --->Endpoints
 
 
